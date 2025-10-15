@@ -419,15 +419,16 @@ def validate_webhook_data(url, triggers, project, bot=None):
             return "URL already subscribed"
 
     # Webhook limit check
+
     if bot:
         # For bot-level webhooks, check the limit (only count bot-level webhooks)
         bot_level_webhooks = WebhookSubscription.objects.filter(project=project, bot=bot).count()
-        if bot_level_webhooks >= 2:
+        if bot_level_webhooks >= 4:
             return "You have reached the maximum number of webhooks for a single bot"
     else:
         # For project-level webhooks, check the limit (only count project-level webhooks)
         project_level_webhooks = WebhookSubscription.objects.filter(project=project, bot__isnull=True).count()
-        if project_level_webhooks >= 2:
+        if project_level_webhooks >= 4:
             return "You have reached the maximum number of webhooks"
 
     # If we get here, the webhook data is valid

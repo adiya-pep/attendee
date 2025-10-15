@@ -1,0 +1,78 @@
+services:
+  attendee-worker:
+    build: ./
+    env_file:
+      - .env
+    networks:
+      - attendee_network
+    environment:
+      - POSTGRES_HOST=postgres
+      - REDIS_URL=redis://redis:6379/0
+      - DJANGO_SETTINGS_MODULE=attendee.settings.production
+      - ENABLE_CHROME_SANDBOX=true
+    command: "celery -A attendee worker -l INFO --concurrency=2"
+    security_opt:
+      - seccomp=./bots/web_bot_adapter/chrome_seccomp.json
+    restart: unless-stopped
+
+  attendee-scheduler:
+    build: ./
+    env_file:
+      - .env
+    networks:
+      - attendee_network
+    environment:
+      - POSTGRES_HOST=postgres
+      - REDIS_URL=redis://redis:6379/0
+      - DJANGO_SETTINGS_MODULE=attendee.settings.production
+    command: "python manage.py run_scheduler"
+    entrypoint: []
+    restart: unless-stopped
+
+  attendee-app:
+    build: ./
+    env_file:
+      - .env
+    networks:
+      - attendee_network
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_HOST=postgres
+      - REDIS_URL=redis://redis:6379/0
+      - DJANGO_SETTINGS_MODULE=attendee.settings.production
+    command: >
+      bash -c "python manage.py migrate &&
+               python manage.py collectstatic --noinput &&
+               gunicorn attendee.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120"
+    entrypoint: []
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15.3-alpine
+    environment:
+      POSTGRES_DB: attendee_prod
+      POSTGRES_USER: attendee_user
+      POSTGRES_PASSWORD: secure_password_here
+      PGDATA: /data/postgres
+    volumes:
+       - postgres:/data/postgres
+    networks:
+      - attendee_network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - attendee_network
+    restart: unless-stopped
+    volumes:
+      - redis:/data/redis
+
+networks:
+  attendee_network:
+    driver: bridge
+
+volumes:
+  postgres:
+  redis:
