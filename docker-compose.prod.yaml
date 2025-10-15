@@ -8,6 +8,8 @@ services:
     environment:
       - POSTGRES_HOST=postgres
       - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://attendee_user:secure_password_here@postgres:5432/attendee_prod
+      - POSTGRES_SSL_REQUIRE=false
       - DJANGO_SETTINGS_MODULE=attendee.settings.production
       - ENABLE_CHROME_SANDBOX=true
     command: "celery -A attendee worker -l INFO --concurrency=2"
@@ -24,6 +26,8 @@ services:
     environment:
       - POSTGRES_HOST=postgres
       - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://attendee_user:secure_password_here@postgres:5432/attendee_prod
+      - POSTGRES_SSL_REQUIRE=false
       - DJANGO_SETTINGS_MODULE=attendee.settings.production
     command: "python manage.py run_scheduler"
     entrypoint: []
@@ -40,6 +44,8 @@ services:
     environment:
       - POSTGRES_HOST=postgres
       - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://attendee_user:secure_password_here@postgres:5432/attendee_prod
+      - POSTGRES_SSL_REQUIRE=false
       - DJANGO_SETTINGS_MODULE=attendee.settings.production
     command: >
       bash -c "python manage.py migrate &&
