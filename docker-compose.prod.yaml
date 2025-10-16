@@ -46,6 +46,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - DATABASE_URL=postgresql://attendee_user:secure_password_here@postgres:5432/attendee_prod
       - POSTGRES_SSL_REQUIRE=false
+      - DISABLE_SSL_REDIRECT=true
       - DJANGO_SETTINGS_MODULE=attendee.settings.production
     command: >
       bash -c "python manage.py migrate &&
