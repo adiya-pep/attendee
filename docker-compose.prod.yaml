@@ -1,5 +1,5 @@
 services:
-  attendee-worker:
+  attendee-worker-1:
     build: ./
     env_file:
       - .env
@@ -7,12 +7,66 @@ services:
       - attendee_network
     environment:
       - POSTGRES_HOST=postgres
-      - REDIS_URL=redis://redis:6379/0
+      - REDIS_URL=redis://redis:6379/5
       - DATABASE_URL=postgresql://attendee_user:secure_password_here@postgres:5432/attendee_prod
       - POSTGRES_SSL_REQUIRE=false
       - DJANGO_SETTINGS_MODULE=attendee.settings.production
       - ENABLE_CHROME_SANDBOX=true
-    command: "celery -A attendee worker -l INFO --concurrency=2"
+    command: ["/bin/bash", "-c", "/opt/bin/entrypoint.sh && celery -A attendee worker -l INFO --concurrency=1"]
+    security_opt:
+      - seccomp=./bots/web_bot_adapter/chrome_seccomp.json
+    restart: unless-stopped
+
+  attendee-worker-2:
+    build: ./
+    env_file:
+      - .env
+    networks:
+      - attendee_network
+    environment:
+      - POSTGRES_HOST=postgres
+      - REDIS_URL=redis://redis:6379/5
+      - DATABASE_URL=postgresql://attendee_user:secure_password_here@postgres:5432/attendee_prod
+      - POSTGRES_SSL_REQUIRE=false
+      - DJANGO_SETTINGS_MODULE=attendee.settings.production
+      - ENABLE_CHROME_SANDBOX=true
+    command: ["/bin/bash", "-c", "/opt/bin/entrypoint.sh && celery -A attendee worker -l INFO --concurrency=1"]
+    security_opt:
+      - seccomp=./bots/web_bot_adapter/chrome_seccomp.json
+    restart: unless-stopped
+
+  attendee-worker-3:
+    build: ./
+    env_file:
+      - .env
+    networks:
+      - attendee_network
+    environment:
+      - POSTGRES_HOST=postgres
+      - REDIS_URL=redis://redis:6379/5
+      - DATABASE_URL=postgresql://attendee_user:secure_password_here@postgres:5432/attendee_prod
+      - POSTGRES_SSL_REQUIRE=false
+      - DJANGO_SETTINGS_MODULE=attendee.settings.production
+      - ENABLE_CHROME_SANDBOX=true
+    command: ["/bin/bash", "-c", "/opt/bin/entrypoint.sh && celery -A attendee worker -l INFO --concurrency=1"]
+    security_opt:
+      - seccomp=./bots/web_bot_adapter/chrome_seccomp.json
+    restart: unless-stopped
+
+  attendee-worker-4:
+    build: ./
+    env_file:
+      - .env
+    networks:
+      - attendee_network
+    environment:
+      - POSTGRES_HOST=postgres
+      - REDIS_URL=redis://redis:6379/5
+      - DATABASE_URL=postgresql://attendee_user:secure_password_here@postgres:5432/attendee_prod
+      - POSTGRES_SSL_REQUIRE=false
+      - DJANGO_SETTINGS_MODULE=attendee.settings.production
+      - ENABLE_CHROME_SANDBOX=true
+    command: ["/bin/bash", "-c", "/opt/bin/entrypoint.sh && celery -A attendee worker -l INFO --concurrency=1"]
     security_opt:
       - seccomp=./bots/web_bot_adapter/chrome_seccomp.json
     restart: unless-stopped
@@ -25,12 +79,11 @@ services:
       - attendee_network
     environment:
       - POSTGRES_HOST=postgres
-      - REDIS_URL=redis://redis:6379/0
+      - REDIS_URL=redis://redis:6379/5
       - DATABASE_URL=postgresql://attendee_user:secure_password_here@postgres:5432/attendee_prod
       - POSTGRES_SSL_REQUIRE=false
       - DJANGO_SETTINGS_MODULE=attendee.settings.production
-    command: "python manage.py run_scheduler"
-    entrypoint: []
+    command: ["/bin/bash", "-c", "/opt/bin/entrypoint.sh && python manage.py run_scheduler"]
     restart: unless-stopped
 
   attendee-app:
@@ -43,7 +96,7 @@ services:
       - "8000:8000"
     environment:
       - POSTGRES_HOST=postgres
-      - REDIS_URL=redis://redis:6379/0
+      - REDIS_URL=redis://redis:6379/5
       - DATABASE_URL=postgresql://attendee_user:secure_password_here@postgres:5432/attendee_prod
       - POSTGRES_SSL_REQUIRE=false
       - DISABLE_SSL_REDIRECT=true
